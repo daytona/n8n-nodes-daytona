@@ -1,0 +1,55 @@
+export const CREDENTIAL_TYPE = 'daytonaApi';
+
+export const DEFAULT_BASE_URL = 'https://app.daytona.io/api';
+
+export const API_ENDPOINTS = {
+	sandbox: {
+		create: '/sandbox',
+		list: '/sandbox/paginated',
+		get: (id: string) => `/sandbox/${encodeURIComponent(id)}`,
+		delete: (id: string) => `/sandbox/${encodeURIComponent(id)}`,
+		start: (id: string) => `/sandbox/${encodeURIComponent(id)}/start`,
+		stop: (id: string) => `/sandbox/${encodeURIComponent(id)}/stop`,
+		previewUrl: (id: string, port: number) =>
+			`/sandbox/${encodeURIComponent(id)}/ports/${port}/preview-url`,
+		signedPreviewUrl: (id: string, port: number) =>
+			`/sandbox/${encodeURIComponent(id)}/ports/${port}/signed-preview-url`,
+	},
+	apiKeys: {
+		current: '/api-keys/current',
+	},
+};
+
+/**
+ * Toolbox endpoints are appended to a per-sandbox base URL composed as:
+ *   `{toolboxProxyUrl}/{sandboxId}{path}`
+ *
+ * The `toolboxProxyUrl` value returned by `GET /sandbox/{id}` ALREADY
+ * includes the `/toolbox` segment — do NOT prepend it again. See
+ * helpers/transport.ts (`getToolboxBase`, `daytonaToolboxRequest`) for
+ * the composition logic.
+ */
+export const TOOLBOX_ENDPOINTS = {
+	process: {
+		runCode: '/process/code-run',
+		execute: '/process/execute',
+	},
+	files: {
+		upload: '/files/upload',
+		download: '/files/download',
+		info: '/files/info',
+		list: '/files',
+	},
+	git: {
+		clone: '/git/clone',
+	},
+};
+
+/**
+ * Default polling configuration for waiting on a sandbox to reach a target state
+ * (e.g. after Create or Start). Used by Sandbox.Create and ephemeral Code ops.
+ */
+export const SANDBOX_READY_POLL = {
+	intervalMs: 1000,
+	timeoutMs: 60_000,
+};

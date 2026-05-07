@@ -1,0 +1,53 @@
+{
+  "name": "@daytona/n8n-nodes-daytona",
+  "version": "0.1.0",
+  "description": "n8n community node for Daytona — manage sandboxes and run code, commands, file ops, and git clones inside Daytona from your workflows.",
+  "license": "MIT",
+  "homepage": "https://github.com/daytona/n8n-nodes-daytona#readme",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "daytona",
+    "sandbox",
+    "code-execution",
+    "ai-agents"
+  ],
+  "author": {
+    "name": "Daytona Platforms Inc.",
+    "email": "support@daytona.io",
+    "url": "https://www.daytona.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daytona/n8n-nodes-daytona.git"
+  },
+  "bugs": {
+    "url": "https://github.com/daytona/n8n-nodes-daytona/issues"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "files": ["dist"],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": ["dist/credentials/DaytonaApi.credentials.js"],
+    "nodes": ["dist/nodes/Daytona/Daytona.node.js"]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "release-it": "^19.0.4",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
