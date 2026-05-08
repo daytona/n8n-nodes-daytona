@@ -249,7 +249,11 @@ export async function daytonaToolboxUploadFile(
 	const url = `${toolboxBase}/${encodeURIComponent(sandboxId)}${TOOLBOX_ENDPOINTS.files.upload}`;
 
 	const formData = new FormData();
-	formData.append('file', new Blob([file.buffer], { type: file.mimeType }), file.filename);
+	formData.append(
+		'file',
+		new Blob([new Uint8Array(file.buffer)], { type: file.mimeType }),
+		file.filename,
+	);
 
 	try {
 		return await this.helpers.httpRequestWithAuthentication.call(this, CREDENTIAL_TYPE, {
