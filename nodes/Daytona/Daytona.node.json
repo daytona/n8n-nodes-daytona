@@ -2,7 +2,7 @@
 	"node": "@daytona/n8n-nodes-daytona.daytona",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Development", "Developer Tools"],
+	"categories": ["AI", "Developer Tools", "Development"],
 	"resources": {
 		"credentialDocumentation": [
 			{

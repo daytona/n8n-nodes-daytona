@@ -20,7 +20,17 @@ export const description: INodeProperties[] = [
 		default: '',
 		placeholder: 'snapshot-ID-or-name',
 		description:
-			'Snapshot ID or name to base the sandbox on. Leave empty to use the Daytona organization default.',
+			'Snapshot ID or name to base the sandbox on. Leave empty to use either the Image field below or the Daytona organization default. Snapshot takes precedence if both Snapshot and Image are set.',
+		displayOptions: { show: showOnly },
+	},
+	{
+		displayName: 'Image',
+		name: 'image',
+		type: 'string',
+		default: '',
+		placeholder: 'python:3.11',
+		description:
+			'Docker image reference to base the sandbox on (e.g. <code>python:3.11</code> or <code>node:20-slim</code>). Used only when Snapshot is empty. Pulled at sandbox creation time.',
 		displayOptions: { show: showOnly },
 	},
 	{
@@ -106,14 +116,16 @@ export const description: INodeProperties[] = [
 				name: 'cpu',
 				type: 'number',
 				default: 0,
-				description: 'Number of CPU cores. 0 to use the class default.',
+				description:
+					'Number of CPU cores. 0 to use the class default. Only honored with Image-based creates; ignored when creating from a Snapshot (the snapshot defines its own resources).',
 			},
 			{
 				displayName: 'Disk (GB)',
 				name: 'disk',
 				type: 'number',
 				default: 0,
-				description: 'Disk space in gigabytes. 0 to use the class default.',
+				description:
+					'Disk space in gigabytes. 0 to use the class default. Only honored with Image-based creates; ignored when creating from a Snapshot.',
 			},
 			{
 				displayName: 'Environment Variables',
@@ -144,13 +156,6 @@ export const description: INodeProperties[] = [
 						],
 					},
 				],
-			},
-			{
-				displayName: 'GPU',
-				name: 'gpu',
-				type: 'number',
-				default: 0,
-				description: 'Number of GPU units. 0 disables GPU allocation.',
 			},
 			{
 				displayName: 'Labels',
@@ -185,7 +190,8 @@ export const description: INodeProperties[] = [
 				name: 'memory',
 				type: 'number',
 				default: 0,
-				description: 'Memory in gigabytes. 0 to use the class default.',
+				description:
+					'Memory in gigabytes. 0 to use the class default. Only honored with Image-based creates; ignored when creating from a Snapshot.',
 			},
 			{
 				displayName: 'Network Allow List',
@@ -237,7 +243,6 @@ interface AdditionalFields {
 	cpu?: number;
 	disk?: number;
 	env?: { entry?: Array<{ name: string; value: string }> };
-	gpu?: number;
 	labels?: { entry?: Array<{ name: string; value: string }> };
 	memory?: number;
 	networkAllowList?: string;
@@ -252,6 +257,7 @@ export async function execute(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const snapshot = (this.getNodeParameter('snapshot', itemIndex, '') as string).trim();
+	const image = (this.getNodeParameter('image', itemIndex, '') as string).trim();
 	const name = (this.getNodeParameter('name', itemIndex, '') as string).trim();
 	const ephemeral = this.getNodeParameter('ephemeral', itemIndex, false) as boolean;
 	const waitUntilStarted = this.getNodeParameter('waitUntilStarted', itemIndex, true) as boolean;
@@ -262,18 +268,21 @@ export async function execute(
 		{},
 	) as AdditionalFields;
 
+	const isImageBased = !snapshot && Boolean(image);
+	const buildInfo = isImageBased ? { dockerfileContent: `FROM ${image}` } : undefined;
+
 	const body: CreateSandboxRequest = omitUndefined({
 		snapshot: snapshot || undefined,
+		buildInfo,
 		name: name || undefined,
 		ephemeral: ephemeral || undefined,
 		user: additional.user || undefined,
 		public: additional.public || undefined,
 		target: additional.target || undefined,
 		class: (additional.class as 'small' | 'medium' | 'large' | undefined) || undefined,
-		cpu: additional.cpu || undefined,
-		gpu: additional.gpu || undefined,
-		memory: additional.memory || undefined,
-		disk: additional.disk || undefined,
+		cpu: isImageBased ? additional.cpu || undefined : undefined,
+		memory: isImageBased ? additional.memory || undefined : undefined,
+		disk: isImageBased ? additional.disk || undefined : undefined,
 		autoStopInterval: additional.autoStopInterval || undefined,
 		autoArchiveInterval: additional.autoArchiveInterval || undefined,
 		autoDeleteInterval:

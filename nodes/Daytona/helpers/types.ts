@@ -27,7 +27,6 @@ export interface Sandbox {
 	target?: string;
 	class?: SandboxClass;
 	cpu?: number;
-	gpu?: number;
 	memory?: number;
 	disk?: number;
 	user?: string;
@@ -49,6 +48,10 @@ export interface Sandbox {
 export interface CreateSandboxRequest {
 	name?: string;
 	snapshot?: string;
+	buildInfo?: {
+		dockerfileContent?: string;
+		[k: string]: unknown;
+	};
 	user?: string;
 	env?: Record<string, string>;
 	labels?: Record<string, string>;
@@ -56,7 +59,6 @@ export interface CreateSandboxRequest {
 	target?: string;
 	class?: SandboxClass;
 	cpu?: number;
-	gpu?: number;
 	memory?: number;
 	disk?: number;
 	autoStopInterval?: number;
@@ -73,7 +75,6 @@ export interface ProcessExecutionResponse {
 	result: string;
 	artifacts?: {
 		stdout?: string;
-		stderr?: string;
 		charts?: Array<Record<string, unknown>>;
 	};
 }

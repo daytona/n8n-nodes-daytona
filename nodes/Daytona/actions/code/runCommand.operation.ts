@@ -170,16 +170,11 @@ export async function execute(
 		}
 	}
 
-	const stdout = result.artifacts?.stdout ?? result.result ?? '';
-	const stderr = result.artifacts?.stderr ?? '';
-
 	return [
 		{
 			json: {
 				exitCode: result.exitCode,
-				stdout,
-				stderr,
-				output: [stdout, stderr].filter(Boolean).join(''),
+				result: result.result ?? '',
 				artifacts: result.artifacts ?? null,
 				sandboxId,
 				ephemeral: createdEphemeral,

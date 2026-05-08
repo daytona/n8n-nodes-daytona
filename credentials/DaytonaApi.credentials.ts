@@ -41,7 +41,7 @@ export class DaytonaApi implements ICredentialType {
 			type: 'string',
 			default: '',
 			description:
-				'Optional. Required only when this API key belongs to multiple organizations or when using a JWT token. Sent as the <code>X-Daytona-Organization-ID</code> header.',
+				'Required when using a JWT token. Optional with API keys (Daytona accepts the header on every request). Sent as the <code>X-Daytona-Organization-ID</code> header.',
 		},
 	];
 
