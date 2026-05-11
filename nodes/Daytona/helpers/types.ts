@@ -100,3 +100,55 @@ export interface PaginatedResponse<T> {
 	totalPages?: number;
 	hasMore?: boolean;
 }
+
+export type SnapshotState =
+	| 'creating'
+	| 'pending'
+	| 'building'
+	| 'active'
+	| 'inactive'
+	| 'destroyed'
+	| 'error'
+	| 'unknown';
+
+export interface Snapshot {
+	id: string;
+	name?: string;
+	state?: SnapshotState;
+	imageName?: string;
+	general?: boolean;
+	cpu?: number;
+	memory?: number;
+	disk?: number;
+	regionId?: string;
+	entrypoint?: string[];
+	createdAt?: string;
+	updatedAt?: string;
+	lastUsedAt?: string;
+	[k: string]: unknown;
+}
+
+export interface CreateSnapshotRequest {
+	name: string;
+	imageName?: string;
+	general?: boolean;
+	cpu?: number;
+	memory?: number;
+	disk?: number;
+	regionId?: string;
+	entrypoint?: string[];
+}
+
+export interface Volume {
+	id: string;
+	name?: string;
+	state?: string;
+	deleted?: boolean;
+	createdAt?: string;
+	updatedAt?: string;
+	[k: string]: unknown;
+}
+
+export interface CreateVolumeRequest {
+	name: string;
+}

@@ -14,13 +14,13 @@ const showOnly = { resource: ['sandbox'], operation: ['create'] };
 
 export const description: INodeProperties[] = [
 	{
-		displayName: 'Snapshot',
+		displayName: 'Snapshot Name or ID',
 		name: 'snapshot',
-		type: 'string',
+		type: 'options',
+		typeOptions: { loadOptionsMethod: 'getSnapshots' },
 		default: '',
-		placeholder: 'snapshot-ID-or-name',
 		description:
-			'Snapshot ID or name to base the sandbox on. Leave empty to use either the Image field below or the Daytona organization default. Snapshot takes precedence if both Snapshot and Image are set.',
+			'Snapshot to base the sandbox on. Snapshot takes precedence over Image when both are set; leave at <em>(Use Daytona Default)</em> to use the Image field or the organization default snapshot. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: { show: showOnly },
 	},
 	{

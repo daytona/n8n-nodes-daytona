@@ -21,6 +21,17 @@ import * as sandboxGetMany from './actions/sandbox/getMany.operation';
 import * as sandboxGetPreviewUrl from './actions/sandbox/getPreviewUrl.operation';
 import * as sandboxStart from './actions/sandbox/start.operation';
 import * as sandboxStop from './actions/sandbox/stop.operation';
+import * as snapshotActivate from './actions/snapshot/activate.operation';
+import * as snapshotCreate from './actions/snapshot/create.operation';
+import * as snapshotDeactivate from './actions/snapshot/deactivate.operation';
+import * as snapshotDelete from './actions/snapshot/delete.operation';
+import * as snapshotGet from './actions/snapshot/get.operation';
+import * as snapshotGetMany from './actions/snapshot/getMany.operation';
+import * as volumeCreate from './actions/volume/create.operation';
+import * as volumeDelete from './actions/volume/delete.operation';
+import * as volumeGet from './actions/volume/get.operation';
+import * as volumeGetMany from './actions/volume/getMany.operation';
+import { getSnapshots } from './methods/loadOptions';
 
 export class Daytona implements INodeType {
 	description: INodeTypeDescription = {
@@ -60,6 +71,14 @@ export class Daytona implements INodeType {
 					{
 						name: 'Sandbox',
 						value: 'sandbox',
+					},
+					{
+						name: 'Snapshot',
+						value: 'snapshot',
+					},
+					{
+						name: 'Volume',
+						value: 'volume',
 					},
 				],
 				default: 'sandbox',
@@ -178,6 +197,86 @@ export class Daytona implements INodeType {
 				],
 				default: 'getMany',
 			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['snapshot'] } },
+				options: [
+					{
+						name: 'Activate',
+						value: 'activate',
+						action: 'Activate a snapshot',
+						description: 'Mark a snapshot as active so it becomes usable for sandbox creation',
+					},
+					{
+						name: 'Create',
+						value: 'create',
+						action: 'Create a snapshot',
+						description: 'Create a new snapshot from a Docker image',
+					},
+					{
+						name: 'Deactivate',
+						value: 'deactivate',
+						action: 'Deactivate a snapshot',
+						description: 'Mark a snapshot as inactive',
+					},
+					{
+						name: 'Delete',
+						value: 'delete',
+						action: 'Delete a snapshot',
+						description: 'Permanently delete a snapshot',
+					},
+					{
+						name: 'Get',
+						value: 'get',
+						action: 'Get a snapshot',
+						description: 'Retrieve a single snapshot by ID or name',
+					},
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						action: 'Get many snapshots',
+						description: 'List snapshots in the current organization with optional filters',
+					},
+				],
+				default: 'getMany',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['volume'] } },
+				options: [
+					{
+						name: 'Create',
+						value: 'create',
+						action: 'Create a volume',
+						description: 'Create a new persistent volume',
+					},
+					{
+						name: 'Delete',
+						value: 'delete',
+						action: 'Delete a volume',
+						description: 'Delete a volume by ID or name',
+					},
+					{
+						name: 'Get',
+						value: 'get',
+						action: 'Get a volume',
+						description: 'Retrieve a single volume by ID or name',
+					},
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						action: 'Get many volumes',
+						description: 'List volumes in the current organization',
+					},
+				],
+				default: 'getMany',
+			},
 			...codeRunCode.description,
 			...codeRunCommand.description,
 			...fileDownload.description,
@@ -190,7 +289,23 @@ export class Daytona implements INodeType {
 			...sandboxGetPreviewUrl.description,
 			...sandboxStart.description,
 			...sandboxStop.description,
+			...snapshotActivate.description,
+			...snapshotCreate.description,
+			...snapshotDeactivate.description,
+			...snapshotDelete.description,
+			...snapshotGet.description,
+			...snapshotGetMany.description,
+			...volumeCreate.description,
+			...volumeDelete.description,
+			...volumeGet.description,
+			...volumeGetMany.description,
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			getSnapshots,
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -240,6 +355,36 @@ export class Daytona implements INodeType {
 						break;
 					case 'sandbox.stop':
 						opResult = await sandboxStop.execute.call(this, i);
+						break;
+					case 'snapshot.activate':
+						opResult = await snapshotActivate.execute.call(this, i);
+						break;
+					case 'snapshot.create':
+						opResult = await snapshotCreate.execute.call(this, i);
+						break;
+					case 'snapshot.deactivate':
+						opResult = await snapshotDeactivate.execute.call(this, i);
+						break;
+					case 'snapshot.delete':
+						opResult = await snapshotDelete.execute.call(this, i);
+						break;
+					case 'snapshot.get':
+						opResult = await snapshotGet.execute.call(this, i);
+						break;
+					case 'snapshot.getMany':
+						opResult = await snapshotGetMany.execute.call(this, i);
+						break;
+					case 'volume.create':
+						opResult = await volumeCreate.execute.call(this, i);
+						break;
+					case 'volume.delete':
+						opResult = await volumeDelete.execute.call(this, i);
+						break;
+					case 'volume.get':
+						opResult = await volumeGet.execute.call(this, i);
+						break;
+					case 'volume.getMany':
+						opResult = await volumeGetMany.execute.call(this, i);
 						break;
 					default:
 						throw new NodeOperationError(

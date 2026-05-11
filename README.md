@@ -65,6 +65,16 @@ The credential is verified against `GET /api-keys/current` when you save — n8n
 | **File** | Upload | Upload an n8n binary field to a sandbox path. Multipart with content-type preservation. |
 | | Download | Read a file from a sandbox path and emit it as binary output for downstream nodes. |
 | **Git** | Clone | Clone a Git repository into a sandbox path. Supports branch, commit ID pinning, and HTTPS basic auth for private repositories. |
+| **Snapshot** | Create | Create a snapshot from a Docker image with optional resource specs (CPU/memory/disk) and entrypoint. |
+| | Get | Fetch a single snapshot by ID or name. |
+| | Get Many | List snapshots with optional name filter, sort (by `createdAt`, `lastUsedAt`, `name`, `state`), and order. |
+| | Delete | Permanently delete a snapshot. |
+| | Activate | Mark a snapshot as active so it becomes usable for sandbox creation. |
+| | Deactivate | Mark a snapshot as inactive. |
+| **Volume** | Create | Create a persistent volume that can be mounted into sandboxes. |
+| | Get | Fetch a single volume by ID or name. |
+| | Get Many | List volumes; optionally include soft-deleted ones. |
+| | Delete | Delete a volume. |
 
 ### Operation behavior notes
 
@@ -72,6 +82,10 @@ The credential is verified against `GET /api-keys/current` when you save — n8n
 - **Ephemeral mode** uses `ephemeral: true` (equivalent to `autoDeleteInterval: 0`) when creating the sandbox; cleanup runs in a `try/finally` so the sandbox is deleted even if the operation throws.
 - **Preview URL Signed flavor** embeds the auth token directly in the URL — no need for downstream nodes to add headers. The Standard flavor returns `{ url, token }` separately for callers that prefer header-based auth.
 - **Toolbox URL caching** — Daytona returns a per-sandbox `toolboxProxyUrl` from `GET /sandbox/{id}` that all toolbox operations (code/command/file/git) use to route requests. Within a single node execution this URL is fetched once per sandbox and reused for subsequent toolbox operations. The cache is invalidated on Start, Stop, and Delete so that subsequent calls re-fetch the URL and reflect any state change.
+
+### Snapshot picker on Sandbox.Create
+
+The **Snapshot** field on `Sandbox.Create` is a dropdown populated dynamically from your Daytona organization. Pick from the list, leave at *(Use Daytona Default)*, or switch to expression mode to pass a dynamic value.
 
 ### AI Agent integration
 

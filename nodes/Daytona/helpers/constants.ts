@@ -18,6 +18,20 @@ export const API_ENDPOINTS = {
 	apiKeys: {
 		current: '/api-keys/current',
 	},
+	snapshot: {
+		create: '/snapshots',
+		list: '/snapshots',
+		get: (id: string) => `/snapshots/${encodeURIComponent(id)}`,
+		delete: (id: string) => `/snapshots/${encodeURIComponent(id)}`,
+		activate: (id: string) => `/snapshots/${encodeURIComponent(id)}/activate`,
+		deactivate: (id: string) => `/snapshots/${encodeURIComponent(id)}/deactivate`,
+	},
+	volume: {
+		create: '/volumes',
+		list: '/volumes',
+		get: (id: string) => `/volumes/${encodeURIComponent(id)}`,
+		delete: (id: string) => `/volumes/${encodeURIComponent(id)}`,
+	},
 };
 
 /**

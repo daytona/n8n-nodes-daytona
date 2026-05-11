@@ -39,6 +39,26 @@ Output: `{ exitCode, result, artifacts, sandboxId, ephemeral }`. `result` is std
 
 - **Clone** — Clone a Git repository into a sandbox path. Supports branch, commit ID pinning, and HTTPS basic auth (username + password / personal access token) for private repositories.
 
+#### Snapshot resource (6 operations)
+
+- **Create** — Create a snapshot from a Docker image with optional resource specs (CPU/memory/disk), region, and entrypoint (comma-separated string converted to array).
+- **Get** — Fetch a snapshot by ID or name.
+- **Get Many** — List snapshots with optional name filter, sort (`createdAt`/`lastUsedAt`/`name`/`state`), and order (`asc`/`desc`).
+- **Delete** — Delete a snapshot.
+- **Activate** — Mark a snapshot active so it becomes usable for sandbox creation.
+- **Deactivate** — Mark a snapshot inactive.
+
+#### Volume resource (4 operations)
+
+- **Create** — Create a persistent volume that can be mounted into sandboxes.
+- **Get** — Fetch a volume by ID or name.
+- **Get Many** — List volumes with optional `includeDeleted` flag.
+- **Delete** — Delete a volume.
+
+#### Sandbox.Create — snapshot dropdown
+
+The **Snapshot** field on Sandbox.Create renders as a dropdown populated by `methods.loadOptions.getSnapshots` (queries `GET /snapshots` with `sort=lastUsedAt&order=desc`, up to 100 entries). Includes a "(Use Daytona Default)" entry for empty value. Switch to expression mode for dynamic values.
+
 #### Credentials
 
 - **Daytona API** credential type with three fields:

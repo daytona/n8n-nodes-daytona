@@ -1,8 +1,11 @@
 /* eslint-disable @n8n/community-nodes/no-restricted-imports, @n8n/community-nodes/require-node-api-error, no-console */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { sleep } from 'n8n-workflow';
 
 import * as sandboxCreate from '../nodes/Daytona/actions/sandbox/create.operation';
 import * as sandboxDelete from '../nodes/Daytona/actions/sandbox/delete.operation';
+import * as snapshotActivate from '../nodes/Daytona/actions/snapshot/activate.operation';
+import * as snapshotGet from '../nodes/Daytona/actions/snapshot/get.operation';
 import * as codeRunCommand from '../nodes/Daytona/actions/code/runCommand.operation';
 
 import { createMockExecuteContext } from './helpers/mock-execute';
@@ -19,6 +22,41 @@ describe.skipIf(!shouldRunCreateMatrix())(
 	'Sandbox.Create — combinations matrix (opt-in via DAYTONA_TEST_INCLUDE_CREATE_MATRIX=1)',
 	() => {
 		const created: string[] = [];
+
+		beforeAll(async () => {
+			if (!TEST_DEFAULTS.snapshot || !credentials) return;
+			try {
+				const getCtx = createMockExecuteContext({
+					credentials,
+					parameters: { snapshotId: TEST_DEFAULTS.snapshot },
+				});
+				const snap = (await snapshotGet.execute.call(getCtx, 0))[0].json as Record<
+					string,
+					unknown
+				>;
+				if (snap.state === 'active') return;
+				if (!snap.id) return;
+				const activateCtx = createMockExecuteContext({
+					credentials,
+					parameters: { snapshotId: snap.id },
+				});
+				await snapshotActivate.execute.call(activateCtx, 0);
+				const deadline = Date.now() + 60_000;
+				while (Date.now() < deadline) {
+					const polled = (await snapshotGet.execute.call(getCtx, 0))[0].json as Record<
+						string,
+						unknown
+					>;
+					if (polled.state === 'active') return;
+					await sleep(2000);
+				}
+			} catch (err) {
+				console.warn(
+					`[beforeAll] Could not activate DAYTONA_TEST_SNAPSHOT="${TEST_DEFAULTS.snapshot}":`,
+					err,
+				);
+			}
+		}, 120_000);
 
 		afterEach(async () => {
 			for (const id of created.splice(0)) {
