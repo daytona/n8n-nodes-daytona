@@ -18,6 +18,7 @@ export type SandboxClass = 'small' | 'medium' | 'large';
 export interface SandboxVolumeMount {
 	volumeId: string;
 	mountPath: string;
+	subpath?: string;
 }
 
 export interface Sandbox {

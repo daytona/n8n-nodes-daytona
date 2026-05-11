@@ -7,6 +7,9 @@ import * as sandboxDelete from '../nodes/Daytona/actions/sandbox/delete.operatio
 import * as snapshotActivate from '../nodes/Daytona/actions/snapshot/activate.operation';
 import * as snapshotGet from '../nodes/Daytona/actions/snapshot/get.operation';
 import * as codeRunCommand from '../nodes/Daytona/actions/code/runCommand.operation';
+import * as volumeCreate from '../nodes/Daytona/actions/volume/create.operation';
+import * as volumeDelete from '../nodes/Daytona/actions/volume/delete.operation';
+import * as volumeGet from '../nodes/Daytona/actions/volume/get.operation';
 
 import { createMockExecuteContext } from './helpers/mock-execute';
 import {
@@ -289,6 +292,111 @@ describe.skipIf(!shouldRunCreateMatrix())(
 			>;
 			expect(verifyOut.exitCode).toBe(0);
 			expect(verifyOut.result).toContain('baz');
+		});
+
+		it('Sandbox.Create with Volume Mount — round-trip (create volume → mount → verify ls inside → cleanup)', async () => {
+			const volumeName = `n8n-test-mount-${Date.now()}`;
+			let volumeId = '';
+			let sandboxId = '';
+
+			try {
+				const volCtx = createMockExecuteContext({
+					credentials: credentials!,
+					parameters: { name: volumeName },
+				});
+				const volume = (await volumeCreate.execute.call(volCtx, 0))[0].json as Record<
+					string,
+					unknown
+				>;
+				volumeId = volume.id as string;
+				expect(volumeId).toBeTypeOf('string');
+
+				const readyDeadline = Date.now() + 60_000;
+				while (Date.now() < readyDeadline) {
+					const getCtx = createMockExecuteContext({
+						credentials: credentials!,
+						parameters: { volumeId },
+					});
+					const v = (await volumeGet.execute.call(getCtx, 0))[0].json as Record<string, unknown>;
+					if (v.state === 'ready') break;
+					if (v.state === 'error') throw new Error(`Volume ${volumeId} entered error state`);
+					await sleep(2000);
+				}
+
+				const mountPath = '/workspace/data';
+				const sbCtx = createMockExecuteContext({
+					credentials: credentials!,
+					parameters: {
+						snapshot: '',
+						image: '',
+						name: '',
+						ephemeral: false,
+						waitUntilStarted: true,
+						waitTimeoutSeconds: 120,
+						additionalFields: {
+							volumes: { entry: [{ volumeId, mountPath }] },
+						},
+					},
+				});
+				const sb = (await sandboxCreate.execute.call(sbCtx, 0))[0].json as Record<
+					string,
+					unknown
+				>;
+				sandboxId = sb.id as string;
+				expect(sb.state).toBe('started');
+
+				const lsCtx = createMockExecuteContext({
+					credentials: credentials!,
+					parameters: {
+						command: `ls -la ${mountPath} && echo "MOUNT_OK"`,
+						useEphemeralSandbox: false,
+						sandboxId,
+						additionalFields: {},
+					},
+				});
+				const lsOut = (await codeRunCommand.execute.call(lsCtx, 0))[0].json as Record<
+					string,
+					unknown
+				>;
+				expect(lsOut.exitCode).toBe(0);
+				expect(lsOut.result).toContain('MOUNT_OK');
+			} finally {
+				if (sandboxId) {
+					try {
+						const delCtx = createMockExecuteContext({
+							credentials: credentials!,
+							parameters: { sandboxId },
+						});
+						await sandboxDelete.execute.call(delCtx, 0);
+					} catch (err) {
+						console.warn(`[volume-mount test] sandbox cleanup ${sandboxId}:`, err);
+					}
+				}
+				if (volumeId) {
+					try {
+						const cleanupDeadline = Date.now() + 60_000;
+						while (Date.now() < cleanupDeadline) {
+							const getCtx = createMockExecuteContext({
+								credentials: credentials!,
+								parameters: { volumeId },
+							});
+							const v = (await volumeGet.execute.call(getCtx, 0))[0].json as Record<
+								string,
+								unknown
+							>;
+							if (v.state === 'ready' || v.state === 'error') break;
+							await sleep(2000);
+						}
+						const delCtx = createMockExecuteContext({
+							credentials: credentials!,
+							parameters: { volumeId },
+						});
+						await volumeDelete.execute.call(delCtx, 0);
+					} catch (err) {
+						console.warn(`[volume-mount test] volume cleanup ${volumeId}:`, err);
+					}
+				}
+			}
 		});
 	},
 );

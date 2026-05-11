@@ -231,6 +231,47 @@ export const description: INodeProperties[] = [
 				default: '',
 				description: 'OS user inside the sandbox. Defaults to "daytona".',
 			},
+			{
+				displayName: 'Volume Mounts',
+				name: 'volumes',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				placeholder: 'Add Volume Mount',
+				default: {},
+				description:
+					'Volumes to mount into the sandbox. Create volumes via the Volume resource first.',
+				options: [
+					{
+						name: 'entry',
+						displayName: 'Volume Mount',
+						values: [
+							{
+								displayName: 'Volume ID',
+								name: 'volumeId',
+								type: 'string',
+								default: '',
+								description: 'UUID of the volume to mount',
+							},
+							{
+								displayName: 'Mount Path',
+								name: 'mountPath',
+								type: 'string',
+								default: '',
+								placeholder: '/home/daytona/data',
+								description: 'Absolute path inside the sandbox where the volume is mounted',
+							},
+							{
+								displayName: 'Subpath',
+								name: 'subpath',
+								type: 'string',
+								default: '',
+								description:
+									'Optional subpath/prefix within the volume to mount. When omitted, the entire volume is mounted.',
+							},
+						],
+					},
+				],
+			},
 		],
 	},
 ];
@@ -250,6 +291,7 @@ interface AdditionalFields {
 	public?: boolean;
 	target?: string;
 	user?: string;
+	volumes?: { entry?: Array<{ volumeId: string; mountPath: string; subpath?: string }> };
 }
 
 export async function execute(
@@ -270,6 +312,17 @@ export async function execute(
 
 	const isImageBased = !snapshot && Boolean(image);
 	const buildInfo = isImageBased ? { dockerfileContent: `FROM ${image}` } : undefined;
+
+	const volumeMounts = additional.volumes?.entry
+		?.filter((v) => v.volumeId?.trim() && v.mountPath?.trim())
+		.map((v) => {
+			const mount: { volumeId: string; mountPath: string; subpath?: string } = {
+				volumeId: v.volumeId.trim(),
+				mountPath: v.mountPath.trim(),
+			};
+			if (v.subpath?.trim()) mount.subpath = v.subpath.trim();
+			return mount;
+		});
 
 	const body: CreateSandboxRequest = omitUndefined({
 		snapshot: snapshot || undefined,
@@ -293,6 +346,7 @@ export async function execute(
 		networkAllowList: additional.networkAllowList || undefined,
 		env: fixedCollectionToObject(additional.env),
 		labels: fixedCollectionToObject(additional.labels),
+		volumes: volumeMounts && volumeMounts.length > 0 ? volumeMounts : undefined,
 	}) as CreateSandboxRequest;
 
 	const created = (await daytonaApiRequest.call(

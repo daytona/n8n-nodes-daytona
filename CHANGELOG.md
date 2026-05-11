@@ -55,6 +55,8 @@ Output: `{ exitCode, result, artifacts, sandboxId, ephemeral }`. `result` is std
 - **Get Many** — List volumes with optional `includeDeleted` flag.
 - **Delete** — Delete a volume.
 
+Mount volumes into sandboxes via the **Volume Mounts** field on `Sandbox.Create` (Additional Fields). Each entry takes `volumeId`, `mountPath`, and optional `subpath` for partial mounts.
+
 #### Sandbox.Create — snapshot dropdown
 
 The **Snapshot** field on Sandbox.Create renders as a dropdown populated by `methods.loadOptions.getSnapshots` (queries `GET /snapshots` with `sort=lastUsedAt&order=desc`, up to 100 entries). Includes a "(Use Daytona Default)" entry for empty value. Switch to expression mode for dynamic values.
