@@ -68,7 +68,6 @@ export interface CreateSandboxRequest {
 	volumes?: SandboxVolumeMount[];
 	networkBlockAll?: boolean;
 	networkAllowList?: string;
-	ephemeral?: boolean;
 }
 
 export interface ProcessExecutionResponse {

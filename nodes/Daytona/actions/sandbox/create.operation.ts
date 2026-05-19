@@ -324,11 +324,15 @@ export async function execute(
 			return mount;
 		});
 
+	const explicitAutoDelete =
+		typeof additional.autoDeleteInterval === 'number' ? additional.autoDeleteInterval : undefined;
+	const autoDeleteInterval =
+		explicitAutoDelete !== undefined ? explicitAutoDelete : ephemeral ? 0 : undefined;
+
 	const body: CreateSandboxRequest = omitUndefined({
 		snapshot: snapshot || undefined,
 		buildInfo,
 		name: name || undefined,
-		ephemeral: ephemeral || undefined,
 		user: additional.user || undefined,
 		public: additional.public || undefined,
 		target: additional.target || undefined,
@@ -338,10 +342,7 @@ export async function execute(
 		disk: isImageBased ? additional.disk || undefined : undefined,
 		autoStopInterval: additional.autoStopInterval || undefined,
 		autoArchiveInterval: additional.autoArchiveInterval || undefined,
-		autoDeleteInterval:
-			typeof additional.autoDeleteInterval === 'number'
-				? additional.autoDeleteInterval
-				: undefined,
+		autoDeleteInterval,
 		networkBlockAll: additional.networkBlockAll || undefined,
 		networkAllowList: additional.networkAllowList || undefined,
 		env: fixedCollectionToObject(additional.env),

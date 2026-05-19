@@ -198,7 +198,7 @@ export async function createEphemeralSandbox(
 		snapshot: options.snapshot || undefined,
 		env: options.envVars,
 		...options.additionalCreateFields,
-		ephemeral: true,
+		autoDeleteInterval: 0,
 	}) as unknown as IDataObject;
 
 	const created = (await daytonaApiRequest.call(
