@@ -15,7 +15,7 @@ First public release. Hybrid-style n8n community node implementing 12 operations
 
 #### Sandbox resource (7 operations)
 
-- **Create** — Create a sandbox from either a **Snapshot** (pre-built template ID/name) or an **Image** (Docker image reference like `python:3.11`). Snapshot takes precedence if both are set, matching Daytona's Python SDK. Optional name, ephemeral flag, and advanced options (class, target region, env vars, labels, network policy, auto-stop/archive/delete intervals). Optional poll-until-`started` with configurable timeout. CPU/memory/disk are only sent when creating from an Image (snapshot-based creates inherit the snapshot's resource specs).
+- **Create** — Create a sandbox from either a **Snapshot** (pre-built template ID/name) or an **Image** (Docker image reference like `python:3.11`). Snapshot takes precedence if both are set, matching Daytona's Python SDK. Optional name, ephemeral flag, and advanced options (CPU/memory/disk, target region, env vars, labels, network policy, auto-stop/archive/delete intervals). Optional poll-until-`started` with configurable timeout. CPU/memory/disk are only sent when creating from an Image (snapshot-based creates inherit the snapshot's resource specs).
 - **Get** — Fetch a single sandbox by ID.
 - **Get Many** — List sandboxes with optional limit or full pagination.
 - **Delete** — Permanently delete a sandbox by ID.

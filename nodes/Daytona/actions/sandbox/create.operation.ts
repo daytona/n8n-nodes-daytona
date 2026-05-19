@@ -99,19 +99,6 @@ export const description: INodeProperties[] = [
 				description: 'Minutes of inactivity before the sandbox is auto-stopped. 0 disables.',
 			},
 			{
-				displayName: 'Class',
-				name: 'class',
-				type: 'options',
-				default: '',
-				description: 'Pre-defined sandbox size class',
-				options: [
-					{ name: '(Default)', value: '' },
-					{ name: 'Small', value: 'small' },
-					{ name: 'Medium', value: 'medium' },
-					{ name: 'Large', value: 'large' },
-				],
-			},
-			{
 				displayName: 'CPU',
 				name: 'cpu',
 				type: 'number',
@@ -336,7 +323,6 @@ export async function execute(
 		user: additional.user || undefined,
 		public: additional.public || undefined,
 		target: additional.target || undefined,
-		class: (additional.class as 'small' | 'medium' | 'large' | undefined) || undefined,
 		cpu: isImageBased ? additional.cpu || undefined : undefined,
 		memory: isImageBased ? additional.memory || undefined : undefined,
 		disk: isImageBased ? additional.disk || undefined : undefined,

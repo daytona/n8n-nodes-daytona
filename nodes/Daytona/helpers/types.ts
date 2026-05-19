@@ -13,8 +13,6 @@ export type SandboxState =
 	| 'error'
 	| 'unknown';
 
-export type SandboxClass = 'small' | 'medium' | 'large';
-
 export interface SandboxVolumeMount {
 	volumeId: string;
 	mountPath: string;
@@ -26,7 +24,6 @@ export interface Sandbox {
 	name?: string;
 	state: SandboxState;
 	target?: string;
-	class?: SandboxClass;
 	cpu?: number;
 	memory?: number;
 	disk?: number;
@@ -58,7 +55,6 @@ export interface CreateSandboxRequest {
 	labels?: Record<string, string>;
 	public?: boolean;
 	target?: string;
-	class?: SandboxClass;
 	cpu?: number;
 	memory?: number;
 	disk?: number;
