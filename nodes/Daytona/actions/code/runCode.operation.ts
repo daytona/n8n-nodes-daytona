@@ -164,7 +164,7 @@ export async function execute(
 	const body = omitUndefined({
 		code,
 		language: language || undefined,
-		env: envVars,
+		envs: envVars,
 		argv,
 		timeout,
 	}) as unknown as IDataObject;

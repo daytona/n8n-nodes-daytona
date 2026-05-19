@@ -151,7 +151,7 @@ export async function execute(
 	const body = omitUndefined({
 		command,
 		cwd,
-		env: envVars,
+		envs: envVars,
 		timeout,
 	}) as unknown as IDataObject;
 
