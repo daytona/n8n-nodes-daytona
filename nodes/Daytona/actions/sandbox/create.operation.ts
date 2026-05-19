@@ -311,10 +311,11 @@ export async function execute(
 			return mount;
 		});
 
+	// Ephemeral wins per Daytona SDK convention: when ephemeral=true, autoDeleteInterval
+	// is forced to 0 regardless of any explicit value the user set in Additional Fields.
 	const explicitAutoDelete =
 		typeof additional.autoDeleteInterval === 'number' ? additional.autoDeleteInterval : undefined;
-	const autoDeleteInterval =
-		explicitAutoDelete !== undefined ? explicitAutoDelete : ephemeral ? 0 : undefined;
+	const autoDeleteInterval = ephemeral ? 0 : explicitAutoDelete;
 
 	const body: CreateSandboxRequest = omitUndefined({
 		snapshot: snapshot || undefined,
