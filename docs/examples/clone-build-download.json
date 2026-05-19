@@ -40,7 +40,7 @@
         "operation": "clone",
         "sandboxId": "={{ $json.id }}",
         "repositoryUrl": "https://github.com/octocat/Hello-World.git",
-        "path": "/workspace/repo",
+        "path": "/home/daytona/repo",
         "additionalFields": {}
       },
       "id": "33333333-3333-3333-3333-333333333333",
@@ -59,7 +59,7 @@
       "parameters": {
         "resource": "code",
         "operation": "runCommand",
-        "command": "ls -la /workspace/repo > /tmp/build-output.txt",
+        "command": "ls -la /home/daytona/repo > /tmp/build-output.txt",
         "useEphemeralSandbox": false,
         "sandboxId": "={{ $('Create Sandbox').item.json.id }}",
         "additionalFields": {

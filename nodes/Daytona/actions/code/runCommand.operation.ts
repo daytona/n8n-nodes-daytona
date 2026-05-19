@@ -24,7 +24,7 @@ export const description: INodeProperties[] = [
 		required: true,
 		default: '',
 		typeOptions: { rows: 3 },
-		placeholder: 'ls -la /workspace',
+		placeholder: 'ls -la /home/daytona',
 		description: 'Shell command to execute inside the sandbox',
 		displayOptions: { show: showOnly },
 	},
@@ -69,8 +69,9 @@ export const description: INodeProperties[] = [
 				name: 'cwd',
 				type: 'string',
 				default: '',
-				placeholder: '/workspace',
-				description: 'Directory to run the command in. Defaults to the sandbox home directory.',
+				placeholder: '/home/daytona',
+				description:
+					'Directory to run the command in. Defaults to the sandbox home directory (`/home/daytona`).',
 			},
 			{
 				displayName: 'Environment Variables',

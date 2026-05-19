@@ -24,7 +24,7 @@ export const description: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		placeholder: '/workspace/file.txt',
+		placeholder: '/home/daytona/file.txt',
 		description: 'Absolute path inside the sandbox to read the file from',
 		displayOptions: { show: showOnly },
 	},

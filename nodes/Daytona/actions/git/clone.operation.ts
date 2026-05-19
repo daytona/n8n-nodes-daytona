@@ -37,8 +37,9 @@ export const description: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		placeholder: '/workspace/repo',
-		description: 'Absolute path inside the sandbox to clone into',
+		placeholder: '/home/daytona/repo',
+		description:
+			'Absolute path inside the sandbox to clone into. Sandboxes run as the non-root `daytona` user; pick a path under `/home/daytona/` (writable) or `/tmp/` to avoid permission errors.',
 		displayOptions: { show: showOnly },
 	},
 	{

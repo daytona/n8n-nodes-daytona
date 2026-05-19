@@ -24,8 +24,9 @@ export const description: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		placeholder: '/workspace/file.txt',
-		description: 'Absolute path inside the sandbox where the file should be written',
+		placeholder: '/home/daytona/file.txt',
+		description:
+			'Absolute path inside the sandbox where the file should be written. Sandboxes run as the non-root `daytona` user; pick a path under `/home/daytona/` (writable) or `/tmp/` to avoid permission errors.',
 		displayOptions: { show: showOnly },
 	},
 	{
