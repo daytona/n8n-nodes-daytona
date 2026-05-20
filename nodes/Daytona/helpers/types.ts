@@ -127,7 +127,6 @@ export interface Snapshot {
 export interface CreateSnapshotRequest {
 	name: string;
 	imageName?: string;
-	general?: boolean;
 	cpu?: number;
 	memory?: number;
 	disk?: number;

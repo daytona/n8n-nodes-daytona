@@ -24,3 +24,5 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+
+daytona-llms-full.txt

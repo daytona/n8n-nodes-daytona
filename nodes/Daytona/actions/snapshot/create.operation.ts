@@ -60,16 +60,9 @@ export const description: INodeProperties[] = [
 				name: 'entrypoint',
 				type: 'string',
 				default: '',
-				placeholder: 'sh,-c,echo hello',
+				placeholder: 'sleep infinity',
 				description:
-					'Comma-separated entrypoint command and arguments (e.g. <code>sh,-c,echo hello</code>)',
-			},
-			{
-				displayName: 'General Snapshot',
-				name: 'general',
-				type: 'boolean',
-				default: false,
-				description: 'Whether the snapshot is shared across the organization (admin-only)',
+					'Comma-separated entrypoint command and arguments (e.g. <code>sleep infinity</code>)',
 			},
 			{
 				displayName: 'Memory (GB)',
@@ -93,7 +86,6 @@ interface AdditionalFields {
 	cpu?: number;
 	disk?: number;
 	entrypoint?: string;
-	general?: boolean;
 	memory?: number;
 	regionId?: string;
 }
@@ -116,7 +108,6 @@ export async function execute(
 	const body: CreateSnapshotRequest = omitUndefined({
 		name,
 		imageName,
-		general: additional.general || undefined,
 		cpu: additional.cpu || undefined,
 		memory: additional.memory || undefined,
 		disk: additional.disk || undefined,
