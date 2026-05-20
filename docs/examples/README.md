@@ -4,7 +4,7 @@ Three importable n8n workflow JSONs demonstrating common Daytona node patterns.
 
 ## How to import
 
-In n8n: **Workflows → Import from File** → select the JSON. After import, click each Daytona node and re-pick your credential (the `REPLACE_WITH_YOUR_CREDENTIAL_ID` placeholder is just a hint — n8n needs you to select your actual credential from the dropdown).
+In n8n: **Workflows → Import from File** → select the JSON. After import, click each Daytona node and re-pick your credential (n8n needs you to select your actual credential from the dropdown; the workflow's saved credential ID won't match yours).
 
 ## Workflows
 

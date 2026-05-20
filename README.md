@@ -6,7 +6,7 @@ The official [Daytona](https://www.daytona.io) community node for [n8n](https://
 
 [Daytona](https://www.daytona.io) provides secure, elastic sandbox infrastructure for AI agents. Each sandbox is a complete, isolated environment that is fully programmable, spun up on demand, and built for autonomous use without human intervention.
 
-Using n8n, you can integrate Daytona into any automated workflow: create sandboxes from snapshots or custom Docker images, clone repositories, execute code and shell commands, expose running services via preview URLs, upload and download files, and manage the full sandbox lifecycle — all as composable steps alongside thousands of other n8n nodes.
+Using n8n, you can integrate Daytona into any automated workflow: create sandboxes from snapshots or custom Docker images, manage the full sandbox lifecycle, execute code and shell commands, expose running services via preview URLs, drive a complete Git pipeline (clone, status, add, commit, push, pull, checkout), and manage the sandbox filesystem (upload, download, list, move, delete, folder creation) — all as composable steps alongside thousands of other n8n nodes.
 
 ## Contents
 
@@ -64,7 +64,17 @@ The credential is verified against `GET /api-keys/current` when you save — n8n
 | | Run Command | Execute a shell command inside a sandbox. Same ephemeral-or-existing modes as Run Code. Supports working directory and environment variables. |
 | **File** | Upload | Upload an n8n binary field to a sandbox path. Multipart with content-type preservation. |
 | | Download | Read a file from a sandbox path and emit it as binary output for downstream nodes. |
+| | List | List entries in a directory. Returns structured metadata (name, isDir, size, mode, modTime, owner, group, permissions) plus a `count` summary. |
+| | Create Folder | Create a directory with Unix-style octal permissions (e.g. `0755`). |
+| | Move | Move or rename a file/directory. Atomic — handles both renames and cross-directory moves. |
+| | Delete | Delete a file or directory. Set **Recursive** to remove non-empty folders. |
 | **Git** | Clone | Clone a Git repository into a sandbox path. Supports branch, commit ID pinning, and HTTPS basic auth for private repositories. |
+| | Status | Return working tree status: current branch, ahead/behind counts vs the tracked remote, and per-file staging/worktree changes. |
+| | Add | Stage one or more files for the next commit. |
+| | Commit | Commit staged changes with required author/email/message. Optional **Allow Empty Commit** for re-triggering CI when nothing changed. |
+| | Push | Push local commits to the remote. Optional HTTPS basic auth for private remotes. |
+| | Pull | Fetch and merge updates from the remote tracking branch. Optional HTTPS basic auth for private remotes. |
+| | Checkout | Check out a branch (existing local or remote-tracking) or a specific commit SHA. |
 | **Snapshot** | Create | Create a snapshot from a Docker image with optional resource specs (CPU/memory/disk) and entrypoint. |
 | | Get | Fetch a single snapshot by ID or name. |
 | | Get Many | List snapshots with optional name filter, sort (by `createdAt`, `lastUsedAt`, `name`, `state`), and order. |
@@ -79,7 +89,7 @@ The credential is verified against `GET /api-keys/current` when you save — n8n
 ### Operation behavior notes
 
 - **Run Code / Run Command output:** `result` contains stdout and stderr combined. `artifacts` carries any extra metadata Daytona returns (e.g. matplotlib `charts` for Python). Branch on `$json.exitCode` for success/failure — non-zero exit codes are returned as data, not thrown as errors.
-- **Ephemeral mode** uses `ephemeral: true` (equivalent to `autoDeleteInterval: 0`) when creating the sandbox; cleanup runs in a `try/finally` so the sandbox is deleted even if the operation throws.
+- **Ephemeral mode** creates a sandbox with `autoDeleteInterval: 0` so it auto-deletes as soon as it stops. Cleanup also runs in a `try/finally` so the sandbox is deleted even if the operation throws.
 - **Preview URL Signed flavor** embeds the auth token directly in the URL — no need for downstream nodes to add headers. The Standard flavor returns `{ url, token }` separately for callers that prefer header-based auth.
 - **Toolbox URL caching** — Daytona returns a per-sandbox `toolboxProxyUrl` from `GET /sandbox/{id}` that all toolbox operations (code/command/file/git) use to route requests. Within a single node execution this URL is fetched once per sandbox and reused for subsequent toolbox operations. The cache is invalidated on Start, Stop, and Delete so that subsequent calls re-fetch the URL and reflect any state change.
 
@@ -126,7 +136,7 @@ DAYTONA_API_KEY=… npm test
 
 Or set values in `.env.local` (gitignored). Set `DAYTONA_TEST_INCLUDE_EPHEMERAL=1` to also run ephemeral-mode tests (creates extra real sandboxes).
 
-The integration suite covers all 12 operations end-to-end against the real Daytona API in ~10 seconds.
+The integration suite covers the core operations across all six resources end-to-end against the real Daytona API in ~20–30 seconds.
 
 ### Lint + build
 

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] — Initial release
 
-First public release. Hybrid-style n8n community node implementing 12 operations across 4 resources for Daytona.
+First public release. Hybrid-style n8n community node implementing 32 operations across 6 resources for Daytona.
 
 ### Added
 
@@ -90,7 +90,7 @@ The **Snapshot** field on Sandbox.Create renders as a dropdown populated by `met
 
 - Scaffolded with `@n8n/node-cli` 0.29.1 in strict mode (n8n Cloud compatible).
 - TypeScript strict mode, ES2019 target, CommonJS modules.
-- Vitest integration test suite covering all 12 operations end-to-end against the real Daytona API. Run with `npm test`; ephemeral tests opt-in via `DAYTONA_TEST_INCLUDE_EPHEMERAL=1`.
+- Vitest integration test suite covering the core operations across all six resources end-to-end against the real Daytona API. Run with `npm test`; ephemeral tests opt-in via `DAYTONA_TEST_INCLUDE_EPHEMERAL=1`.
 - GitHub Actions CI on PR/push (lint + build) and on tag (release with npm provenance attestation via OIDC).
 - MIT license, zero runtime dependencies.
 

@@ -51,7 +51,8 @@ export class Daytona implements INodeType {
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Manage Daytona sandboxes and run code, commands, file ops, and git clones',
+		description:
+			'Manage Daytona sandboxes, snapshots, and volumes; run code and shell commands; drive a full Git pipeline; and manage the sandbox filesystem',
 		defaults: {
 			name: 'Daytona',
 		},
