@@ -11,7 +11,11 @@ import {
 
 import * as codeRunCode from './actions/code/runCode.operation';
 import * as codeRunCommand from './actions/code/runCommand.operation';
+import * as fileCreateFolder from './actions/file/createFolder.operation';
+import * as fileDelete from './actions/file/delete.operation';
 import * as fileDownload from './actions/file/download.operation';
+import * as fileList from './actions/file/list.operation';
+import * as fileMove from './actions/file/move.operation';
 import * as fileUpload from './actions/file/upload.operation';
 import * as gitAdd from './actions/git/add.operation';
 import * as gitCheckout from './actions/git/checkout.operation';
@@ -121,10 +125,34 @@ export class Daytona implements INodeType {
 				displayOptions: { show: { resource: ['file'] } },
 				options: [
 					{
+						name: 'Create Folder',
+						value: 'createFolder',
+						action: 'Create a folder in a sandbox',
+						description: 'Create a directory at an absolute path with Unix-style permissions',
+					},
+					{
+						name: 'Delete',
+						value: 'delete',
+						action: 'Delete a file or directory',
+						description: 'Remove a file or directory; pass Recursive to remove non-empty folders',
+					},
+					{
 						name: 'Download',
 						value: 'download',
 						action: 'Download a file from a sandbox',
 						description: 'Read a file from a sandbox path and emit it as binary output',
+					},
+					{
+						name: 'List',
+						value: 'list',
+						action: 'List files in a directory',
+						description: 'Return file metadata (name, size, mode, modTime, owner) for entries in a directory',
+					},
+					{
+						name: 'Move',
+						value: 'move',
+						action: 'Move or rename a file or directory',
+						description: 'Atomic move/rename. Use a different name to rename in place.',
 					},
 					{
 						name: 'Upload',
@@ -323,6 +351,10 @@ export class Daytona implements INodeType {
 			...codeRunCommand.description,
 			...fileDownload.description,
 			...fileUpload.description,
+			...fileList.description,
+			...fileDelete.description,
+			...fileMove.description,
+			...fileCreateFolder.description,
 			...gitClone.description,
 			...gitStatus.description,
 			...gitAdd.description,
@@ -379,6 +411,18 @@ export class Daytona implements INodeType {
 						break;
 					case 'file.upload':
 						opResult = await fileUpload.execute.call(this, i);
+						break;
+					case 'file.list':
+						opResult = await fileList.execute.call(this, i);
+						break;
+					case 'file.delete':
+						opResult = await fileDelete.execute.call(this, i);
+						break;
+					case 'file.move':
+						opResult = await fileMove.execute.call(this, i);
+						break;
+					case 'file.createFolder':
+						opResult = await fileCreateFolder.execute.call(this, i);
 						break;
 					case 'git.clone':
 						opResult = await gitClone.execute.call(this, i);

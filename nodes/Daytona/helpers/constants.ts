@@ -53,6 +53,9 @@ export const TOOLBOX_ENDPOINTS = {
 		download: '/files/download',
 		info: '/files/info',
 		list: '/files',
+		delete: '/files',
+		folder: '/files/folder',
+		move: '/files/move',
 	},
 	git: {
 		clone: '/git/clone',

@@ -30,10 +30,14 @@ First public release. Hybrid-style n8n community node implementing 12 operations
 
 Output: `{ exitCode, result, artifacts, sandboxId, ephemeral }`. `result` is stdout and stderr combined. Branch on `$json.exitCode` for success/failure — non-zero exit codes are returned as data, not thrown as errors.
 
-#### File resource (2 operations)
+#### File resource (6 operations)
 
 - **Upload** — Upload a binary file from an n8n binary field to a sandbox path. Multipart form upload with content-type preservation.
 - **Download** — Download a file from a sandbox path and emit it as binary output. Filename derivation from `Content-Disposition` header with RFC 5987 fallback.
+- **List** — List entries in a directory. Returns structured metadata per entry (name, isDir, size, mode, modTime, owner, group, permissions) plus a `count` summary.
+- **Create Folder** — Create a directory at an absolute path. Octal permissions string required (e.g. `0755` for rwxr-xr-x).
+- **Move** — Move or rename a file/directory by source/destination paths. Atomic — same operation handles both renames and moves between directories.
+- **Delete** — Delete a file or directory. Optional `Recursive` flag required to remove non-empty folders.
 
 #### Git resource (7 operations)
 

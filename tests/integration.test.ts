@@ -10,7 +10,11 @@ import * as sandboxStart from '../nodes/Daytona/actions/sandbox/start.operation'
 import * as sandboxStop from '../nodes/Daytona/actions/sandbox/stop.operation';
 import * as codeRunCode from '../nodes/Daytona/actions/code/runCode.operation';
 import * as codeRunCommand from '../nodes/Daytona/actions/code/runCommand.operation';
+import * as fileCreateFolder from '../nodes/Daytona/actions/file/createFolder.operation';
+import * as fileDelete from '../nodes/Daytona/actions/file/delete.operation';
 import * as fileDownload from '../nodes/Daytona/actions/file/download.operation';
+import * as fileList from '../nodes/Daytona/actions/file/list.operation';
+import * as fileMove from '../nodes/Daytona/actions/file/move.operation';
 import * as fileUpload from '../nodes/Daytona/actions/file/upload.operation';
 import * as gitAdd from '../nodes/Daytona/actions/git/add.operation';
 import * as gitCheckout from '../nodes/Daytona/actions/git/checkout.operation';
@@ -207,6 +211,89 @@ describe.skipIf(!shouldRunIntegration())('Daytona n8n node — integration', () 
 
 		const decoded = Buffer.from(binary!.data!, 'base64').toString('utf-8');
 		expect(decoded).toBe(payload);
+	});
+
+	it('File.CreateFolder — create folder then verify it appears in List', async () => {
+		const folderPath = '/tmp/integration-test-folder';
+		const createCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: {
+				sandboxId: sharedState.sandboxId,
+				path: folderPath,
+				mode: '0755',
+			},
+		});
+		const createOut = (await fileCreateFolder.execute.call(createCtx, 0))[0].json as Record<
+			string,
+			unknown
+		>;
+		expect(createOut.success).toBe(true);
+
+		const listCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, path: '/tmp' },
+		});
+		const listOut = (await fileList.execute.call(listCtx, 0))[0].json as Record<string, unknown>;
+		const files = listOut.files as Array<{ name: string; isDir: boolean }>;
+		const created = files.find((f) => f.name === 'integration-test-folder');
+		expect(created).toBeDefined();
+		expect(created?.isDir).toBe(true);
+	});
+
+	it('File.Move — rename a file then verify both old/new paths', async () => {
+		const oldName = '/tmp/integration-test-folder/original.txt';
+		const newName = '/tmp/integration-test-folder/renamed.txt';
+
+		const writeCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: {
+				command: `echo 'move test' > ${oldName}`,
+				useEphemeralSandbox: false,
+				sandboxId: sharedState.sandboxId,
+				additionalFields: {},
+			},
+		});
+		await codeRunCommand.execute.call(writeCtx, 0);
+
+		const moveCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, source: oldName, destination: newName },
+		});
+		const moveOut = (await fileMove.execute.call(moveCtx, 0))[0].json as Record<string, unknown>;
+		expect(moveOut.success).toBe(true);
+
+		const listCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, path: '/tmp/integration-test-folder' },
+		});
+		const listOut = (await fileList.execute.call(listCtx, 0))[0].json as Record<string, unknown>;
+		const names = (listOut.files as Array<{ name: string }>).map((f) => f.name);
+		expect(names).toContain('renamed.txt');
+		expect(names).not.toContain('original.txt');
+	});
+
+	it('File.Delete — recursive delete of the test folder', async () => {
+		const deleteCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: {
+				sandboxId: sharedState.sandboxId,
+				path: '/tmp/integration-test-folder',
+				recursive: true,
+			},
+		});
+		const deleteOut = (await fileDelete.execute.call(deleteCtx, 0))[0].json as Record<
+			string,
+			unknown
+		>;
+		expect(deleteOut.success).toBe(true);
+
+		const listCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, path: '/tmp' },
+		});
+		const listOut = (await fileList.execute.call(listCtx, 0))[0].json as Record<string, unknown>;
+		const names = (listOut.files as Array<{ name: string }>).map((f) => f.name);
+		expect(names).not.toContain('integration-test-folder');
 	});
 
 	it('Git.Clone — clone Hello-World repo', async () => {
