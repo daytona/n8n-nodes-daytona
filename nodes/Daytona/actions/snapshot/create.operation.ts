@@ -6,7 +6,7 @@ import type {
 } from 'n8n-workflow';
 
 import { API_ENDPOINTS } from '../../helpers/constants';
-import { daytonaApiRequest } from '../../helpers/transport';
+import { daytonaApiRequest, waitForSnapshotState } from '../../helpers/transport';
 import type { CreateSnapshotRequest, Snapshot } from '../../helpers/types';
 import { omitUndefined } from '../../helpers/utils';
 
@@ -32,6 +32,25 @@ export const description: INodeProperties[] = [
 		placeholder: 'python:3.11-slim',
 		description: 'Docker image to base the snapshot on (must be publicly accessible)',
 		displayOptions: { show: showOnly },
+	},
+	{
+		displayName: 'Wait Until Active',
+		name: 'waitUntilActive',
+		type: 'boolean',
+		default: true,
+		description:
+			'Whether to poll until the snapshot reaches the "active" state before returning. Recommended when chaining downstream operations (e.g. creating a sandbox from the snapshot).',
+		displayOptions: { show: showOnly },
+	},
+	{
+		displayName: 'Wait Timeout (Seconds)',
+		name: 'waitTimeoutSeconds',
+		type: 'number',
+		default: 600,
+		typeOptions: { minValue: 1, maxValue: 1800 },
+		description:
+			'Maximum time to wait for the snapshot to reach the "active" state. Snapshot creation can take several minutes for large Docker images.',
+		displayOptions: { show: { ...showOnly, waitUntilActive: [true] } },
 	},
 	{
 		displayName: 'Additional Fields',
@@ -96,6 +115,12 @@ export async function execute(
 ): Promise<INodeExecutionData[]> {
 	const name = (this.getNodeParameter('name', itemIndex) as string).trim();
 	const imageName = (this.getNodeParameter('imageName', itemIndex) as string).trim();
+	const waitUntilActive = this.getNodeParameter('waitUntilActive', itemIndex, true) as boolean;
+	const waitTimeoutSeconds = this.getNodeParameter(
+		'waitTimeoutSeconds',
+		itemIndex,
+		600,
+	) as number;
 	const additional = this.getNodeParameter('additionalFields', itemIndex, {}) as AdditionalFields;
 
 	const entrypointArray = additional.entrypoint?.trim()
@@ -122,9 +147,17 @@ export async function execute(
 		body as unknown as IDataObject,
 	)) as Snapshot;
 
+	let final: Snapshot = created;
+	if (waitUntilActive && created.state !== 'active') {
+		final = await waitForSnapshotState.call(this, created.id, {
+			targetStates: ['active'],
+			timeoutMs: waitTimeoutSeconds * 1000,
+		});
+	}
+
 	return [
 		{
-			json: created as unknown as IDataObject,
+			json: final as unknown as IDataObject,
 			pairedItem: { item: itemIndex },
 		},
 	];

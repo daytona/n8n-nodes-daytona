@@ -67,3 +67,14 @@ export const SANDBOX_READY_POLL = {
 	intervalMs: 1000,
 	timeoutMs: 60_000,
 };
+
+/**
+ * Default polling configuration for waiting on a snapshot to reach a target state
+ * (e.g. active after Create/Activate, inactive after Deactivate). Snapshot creation
+ * involves pulling and building from a Docker image so the timeout is longer than
+ * for sandboxes.
+ */
+export const SNAPSHOT_READY_POLL = {
+	intervalMs: 2000,
+	timeoutMs: 600_000,
+};

@@ -41,12 +41,12 @@ Output: `{ exitCode, result, artifacts, sandboxId, ephemeral }`. `result` is std
 
 #### Snapshot resource (6 operations)
 
-- **Create** — Create a snapshot from a Docker image with optional resource specs (CPU/memory/disk), region, and entrypoint (comma-separated string converted to array).
+- **Create** — Create a snapshot from a Docker image with optional resource specs (CPU/memory/disk), region, and entrypoint (comma-separated string converted to array). Optional poll-until-`active` with configurable timeout (default 600s — snapshot creation pulls + builds the Docker image, which can take minutes for large images).
 - **Get** — Fetch a snapshot by ID or name.
 - **Get Many** — List snapshots with optional name filter, sort (`createdAt`/`lastUsedAt`/`name`/`state`), and order (`asc`/`desc`).
 - **Delete** — Delete a snapshot.
-- **Activate** — Mark a snapshot active so it becomes usable for sandbox creation.
-- **Deactivate** — Mark a snapshot inactive.
+- **Activate** — Mark a snapshot active so it becomes usable for sandbox creation. Optional poll-until-`active` with configurable timeout (default 120s).
+- **Deactivate** — Mark a snapshot inactive. Optional poll-until-`inactive` with configurable timeout (default 120s).
 
 #### Volume resource (4 operations)
 

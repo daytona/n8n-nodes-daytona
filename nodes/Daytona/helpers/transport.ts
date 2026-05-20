@@ -13,9 +13,16 @@ import {
 	DEFAULT_BASE_URL,
 	API_ENDPOINTS,
 	SANDBOX_READY_POLL,
+	SNAPSHOT_READY_POLL,
 	TOOLBOX_ENDPOINTS,
 } from './constants';
-import type { CreateSandboxRequest, Sandbox, SandboxState } from './types';
+import type {
+	CreateSandboxRequest,
+	Sandbox,
+	SandboxState,
+	Snapshot,
+	SnapshotState,
+} from './types';
 import { omitUndefined } from './utils';
 
 type RequestContext = IExecuteFunctions | ILoadOptionsFunctions;
@@ -180,6 +187,48 @@ export async function waitForSandboxState(
 
 	throw new NodeApiError(this.getNode(), {
 		message: `Timed out after ${timeoutMs}ms waiting for sandbox "${sandboxId}" to reach state(s) [${[...targets].join(', ')}]. Last observed state: "${lastState}".`,
+	});
+}
+
+export interface WaitForSnapshotStateOptions {
+	targetStates: SnapshotState[];
+	failOnStates?: SnapshotState[];
+	timeoutMs?: number;
+	intervalMs?: number;
+}
+
+export async function waitForSnapshotState(
+	this: IExecuteFunctions,
+	snapshotIdOrName: string,
+	options: WaitForSnapshotStateOptions,
+): Promise<Snapshot> {
+	const targets = new Set<SnapshotState>(options.targetStates);
+	const failures = new Set<SnapshotState>(options.failOnStates ?? ['error']);
+	const timeoutMs = options.timeoutMs ?? SNAPSHOT_READY_POLL.timeoutMs;
+	const intervalMs = options.intervalMs ?? SNAPSHOT_READY_POLL.intervalMs;
+	const start = Date.now();
+
+	let lastState: SnapshotState | undefined;
+	while (Date.now() - start <= timeoutMs) {
+		const snapshot = (await daytonaApiRequest.call(
+			this,
+			'GET',
+			API_ENDPOINTS.snapshot.get(snapshotIdOrName),
+		)) as Snapshot;
+		lastState = snapshot.state;
+
+		if (lastState && targets.has(lastState)) return snapshot;
+		if (lastState && failures.has(lastState)) {
+			throw new NodeApiError(this.getNode(), {
+				message: `Snapshot "${snapshotIdOrName}" entered failure state "${lastState}".`,
+			});
+		}
+
+		await sleep(intervalMs);
+	}
+
+	throw new NodeApiError(this.getNode(), {
+		message: `Timed out after ${timeoutMs}ms waiting for snapshot "${snapshotIdOrName}" to reach state(s) [${[...targets].join(', ')}]. Last observed state: "${lastState ?? 'unknown'}".`,
 	});
 }
 
