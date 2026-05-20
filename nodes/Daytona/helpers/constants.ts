@@ -56,6 +56,12 @@ export const TOOLBOX_ENDPOINTS = {
 	},
 	git: {
 		clone: '/git/clone',
+		status: '/git/status',
+		add: '/git/add',
+		commit: '/git/commit',
+		push: '/git/push',
+		pull: '/git/pull',
+		checkout: '/git/checkout',
 	},
 };
 

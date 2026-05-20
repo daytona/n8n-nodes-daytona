@@ -12,7 +12,11 @@ import * as codeRunCode from '../nodes/Daytona/actions/code/runCode.operation';
 import * as codeRunCommand from '../nodes/Daytona/actions/code/runCommand.operation';
 import * as fileDownload from '../nodes/Daytona/actions/file/download.operation';
 import * as fileUpload from '../nodes/Daytona/actions/file/upload.operation';
+import * as gitAdd from '../nodes/Daytona/actions/git/add.operation';
+import * as gitCheckout from '../nodes/Daytona/actions/git/checkout.operation';
 import * as gitClone from '../nodes/Daytona/actions/git/clone.operation';
+import * as gitCommit from '../nodes/Daytona/actions/git/commit.operation';
+import * as gitStatus from '../nodes/Daytona/actions/git/status.operation';
 
 import { createMockExecuteContext, makeBinaryInput } from './helpers/mock-execute';
 import { getTestCredentials, shouldRunIntegration, TEST_DEFAULTS } from './helpers/test-config';
@@ -233,6 +237,111 @@ describe.skipIf(!shouldRunIntegration())('Daytona n8n node — integration', () 
 		expect(verifyOut.exitCode).toBe(0);
 		expect(verifyOut.result).toBeTypeOf('string');
 		expect((verifyOut.result as string).length).toBeGreaterThan(0);
+	});
+
+	it('Git.Status — clean working tree after fresh clone', async () => {
+		const ctx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, path: '/tmp/hello-world' },
+		});
+		const out = (await gitStatus.execute.call(ctx, 0))[0].json as Record<string, unknown>;
+		expect(out.currentBranch).toBeTypeOf('string');
+		expect((out.currentBranch as string).length).toBeGreaterThan(0);
+		expect(Array.isArray(out.fileStatus)).toBe(true);
+	});
+
+	it('Git.Add + Git.Commit + Git.Status — stage, commit, verify clean tree afterward', async () => {
+		const editCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: {
+				command: "echo 'integration-test marker' >> /tmp/hello-world/README",
+				useEphemeralSandbox: false,
+				sandboxId: sharedState.sandboxId,
+				additionalFields: {},
+			},
+		});
+		const editResult = await codeRunCommand.execute.call(editCtx, 0);
+		expect((editResult[0].json as Record<string, unknown>).exitCode).toBe(0);
+
+		const addCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, path: '/tmp/hello-world', files: '.' },
+		});
+		const addOut = (await gitAdd.execute.call(addCtx, 0))[0].json as Record<string, unknown>;
+		expect(addOut.success).toBe(true);
+
+		const commitCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: {
+				sandboxId: sharedState.sandboxId,
+				path: '/tmp/hello-world',
+				message: 'test: integration test commit',
+				author: 'Daytona n8n Test',
+				email: 'test@daytona.io',
+				additionalFields: {},
+			},
+		});
+		const commitOut = (await gitCommit.execute.call(commitCtx, 0))[0].json as Record<
+			string,
+			unknown
+		>;
+		expect(commitOut.success).toBe(true);
+		expect(commitOut.hash).toBeTypeOf('string');
+		expect((commitOut.hash as string).length).toBeGreaterThanOrEqual(7);
+
+		const statusAfterCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, path: '/tmp/hello-world' },
+		});
+		const statusOut = (await gitStatus.execute.call(statusAfterCtx, 0))[0].json as Record<
+			string,
+			unknown
+		>;
+		expect(statusOut.fileStatus).toEqual([]);
+		expect(statusOut.ahead).toBeTypeOf('number');
+	});
+
+	it('Git.Checkout — create branch via shell then switch back', async () => {
+		const createBranchCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: {
+				command:
+					'cd /tmp/hello-world && git checkout -b integration-test-branch && git rev-parse --abbrev-ref HEAD',
+				useEphemeralSandbox: false,
+				sandboxId: sharedState.sandboxId,
+				additionalFields: {},
+			},
+		});
+		const createOut = (await codeRunCommand.execute.call(createBranchCtx, 0))[0].json as Record<
+			string,
+			unknown
+		>;
+		expect(createOut.exitCode).toBe(0);
+		expect((createOut.result as string).trim().endsWith('integration-test-branch')).toBe(true);
+
+		const checkoutCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: {
+				sandboxId: sharedState.sandboxId,
+				path: '/tmp/hello-world',
+				branch: 'master',
+			},
+		});
+		const checkoutOut = (await gitCheckout.execute.call(checkoutCtx, 0))[0].json as Record<
+			string,
+			unknown
+		>;
+		expect(checkoutOut.success).toBe(true);
+
+		const statusCtx = createMockExecuteContext({
+			credentials: credentials!,
+			parameters: { sandboxId: sharedState.sandboxId, path: '/tmp/hello-world' },
+		});
+		const statusOut = (await gitStatus.execute.call(statusCtx, 0))[0].json as Record<
+			string,
+			unknown
+		>;
+		expect(statusOut.currentBranch).toBe('master');
 	});
 
 	it('Sandbox.GetPreviewUrl — signed URL for port 3000', async () => {

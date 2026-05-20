@@ -13,7 +13,13 @@ import * as codeRunCode from './actions/code/runCode.operation';
 import * as codeRunCommand from './actions/code/runCommand.operation';
 import * as fileDownload from './actions/file/download.operation';
 import * as fileUpload from './actions/file/upload.operation';
+import * as gitAdd from './actions/git/add.operation';
+import * as gitCheckout from './actions/git/checkout.operation';
 import * as gitClone from './actions/git/clone.operation';
+import * as gitCommit from './actions/git/commit.operation';
+import * as gitPull from './actions/git/pull.operation';
+import * as gitPush from './actions/git/push.operation';
+import * as gitStatus from './actions/git/status.operation';
 import * as sandboxCreate from './actions/sandbox/create.operation';
 import * as sandboxDelete from './actions/sandbox/delete.operation';
 import * as sandboxGet from './actions/sandbox/get.operation';
@@ -137,10 +143,46 @@ export class Daytona implements INodeType {
 				displayOptions: { show: { resource: ['git'] } },
 				options: [
 					{
+						name: 'Add',
+						value: 'add',
+						action: 'Stage files for the next commit',
+						description: 'Stage one or more files in the working tree',
+					},
+					{
+						name: 'Checkout',
+						value: 'checkout',
+						action: 'Check out a branch or commit',
+						description: 'Switch to a branch or check out a specific commit SHA',
+					},
+					{
 						name: 'Clone',
 						value: 'clone',
 						action: 'Clone a git repository into a sandbox',
 						description: 'Clone a git repository into a path inside the sandbox',
+					},
+					{
+						name: 'Commit',
+						value: 'commit',
+						action: 'Create a commit from staged changes',
+						description: 'Commit the currently-staged changes with an author/message',
+					},
+					{
+						name: 'Pull',
+						value: 'pull',
+						action: 'Pull changes from the remote',
+						description: 'Fetch and merge updates from the remote tracking branch',
+					},
+					{
+						name: 'Push',
+						value: 'push',
+						action: 'Push changes to the remote',
+						description: 'Push local commits to the remote',
+					},
+					{
+						name: 'Status',
+						value: 'status',
+						action: 'Show working tree status',
+						description: 'Return current branch, ahead/behind counts, and per-file status',
 					},
 				],
 				default: 'clone',
@@ -282,6 +324,12 @@ export class Daytona implements INodeType {
 			...fileDownload.description,
 			...fileUpload.description,
 			...gitClone.description,
+			...gitStatus.description,
+			...gitAdd.description,
+			...gitCommit.description,
+			...gitPush.description,
+			...gitPull.description,
+			...gitCheckout.description,
 			...sandboxCreate.description,
 			...sandboxDelete.description,
 			...sandboxGet.description,
@@ -334,6 +382,24 @@ export class Daytona implements INodeType {
 						break;
 					case 'git.clone':
 						opResult = await gitClone.execute.call(this, i);
+						break;
+					case 'git.status':
+						opResult = await gitStatus.execute.call(this, i);
+						break;
+					case 'git.add':
+						opResult = await gitAdd.execute.call(this, i);
+						break;
+					case 'git.commit':
+						opResult = await gitCommit.execute.call(this, i);
+						break;
+					case 'git.push':
+						opResult = await gitPush.execute.call(this, i);
+						break;
+					case 'git.pull':
+						opResult = await gitPull.execute.call(this, i);
+						break;
+					case 'git.checkout':
+						opResult = await gitCheckout.execute.call(this, i);
 						break;
 					case 'sandbox.create':
 						opResult = await sandboxCreate.execute.call(this, i);

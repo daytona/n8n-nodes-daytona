@@ -35,9 +35,15 @@ Output: `{ exitCode, result, artifacts, sandboxId, ephemeral }`. `result` is std
 - **Upload** — Upload a binary file from an n8n binary field to a sandbox path. Multipart form upload with content-type preservation.
 - **Download** — Download a file from a sandbox path and emit it as binary output. Filename derivation from `Content-Disposition` header with RFC 5987 fallback.
 
-#### Git resource (1 operation)
+#### Git resource (7 operations)
 
 - **Clone** — Clone a Git repository into a sandbox path. Supports branch, commit ID pinning, and HTTPS basic auth (username + password / personal access token) for private repositories.
+- **Status** — Return the working tree status of a repository: current branch, ahead/behind counts vs the tracked remote, and a per-file list of staging vs worktree changes.
+- **Add** — Stage one or more files for the next commit. Accepts a comma-separated list (use `.` to stage everything).
+- **Commit** — Create a commit from staged changes. Requires author name, email, and message; optional `Allow Empty Commit` for re-triggering CI when nothing changed.
+- **Push** — Push local commits to the remote. Optional HTTPS basic auth for private remotes.
+- **Pull** — Fetch and merge updates from the remote tracking branch. Optional HTTPS basic auth for private remotes.
+- **Checkout** — Check out a branch (existing local or remote-tracking) or a specific commit SHA.
 
 #### Snapshot resource (6 operations)
 
